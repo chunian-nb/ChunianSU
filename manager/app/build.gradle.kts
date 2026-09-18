@@ -20,11 +20,12 @@ val androidTargetSdkVersion = rootProject.extra["androidTargetSdkVersion"] as In
 val androidSourceCompatibility = rootProject.extra["androidSourceCompatibility"] as JavaVersion
 val androidTargetCompatibility = rootProject.extra["androidTargetCompatibility"] as JavaVersion
 val managerVersionCode = rootProject.extra["managerVersionCode"] as Int
-val managerVersionName = rootProject.extra["managerVersionName"] as String
+val managerVersionName = project.findProperty("CHUNIAN_VERSION_NAME")?.toString()
+    ?: (rootProject.extra["managerVersionName"] as String)
 
 val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
-val defaultManagerPackageName = if (isPrBuild) "me.weishu.kernelsu.pr" else "me.weishu.kernelsu"
-val defaultManagerName = if (isPrBuild) "KernelSU PR" else "KernelSU"
+val defaultManagerPackageName = if (isPrBuild) "me.weishu.chuniansu.pr" else "me.weishu.chuniansu"
+val defaultManagerName = if (isPrBuild) "ChunianSU PR" else "ChunianSU"
 val managerPackageName = project.findProperty("KSU_PACKAGE_NAME")?.toString() ?: defaultManagerPackageName
 val managerName = project.findProperty("KSU_NAME")?.toString() ?: defaultManagerName
 

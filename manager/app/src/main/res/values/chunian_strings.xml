@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chunian_privacy_title">Privacy mode (launcher only)</string>
+    <string name="chunian_privacy_summary">Hide the launcher icon only. Open with *#*#888#*#* on a supported system dialer. Installation records and processes remain visible.</string>
+    <string name="chunian_privacy_confirmation">This hides only the launcher icon, not the installed package, files or processes.\n\nFirst test *#*#888#*#* in your system dialer while the icon is still visible. A supported dialer opens the app without placing a call. Do not press Call if nothing happens.\n\nKeep the recovery commands from CHUNIAN_README.md. The dialer code is a shortcut, not a password. You can restore the icon by turning this switch off.</string>
+    <string name="chunian_privacy_acknowledgement">I have tested the dialer entry and saved the recovery commands.</string>
+    <string name="chunian_privacy_enable">Hide launcher entry</string>
+    <string name="chunian_entry_hidden">Launcher alias disabled. Your launcher may need time to refresh.</string>
+    <string name="chunian_entry_restored">Launcher alias enabled. Your launcher may need time to refresh.</string>
+    <string name="chunian_entry_failed">Could not change the launcher entry. Nothing else was hidden.</string>
+</resources>

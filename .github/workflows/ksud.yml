@@ -54,9 +54,10 @@ jobs:
     - name: Build ksud
       env:
         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        KSU_PACKAGE_NAME: me.weishu.chuniansu
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          export KSU_PACKAGE_NAME="me.weishu.kernelsu.pr"
+          export KSU_PACKAGE_NAME="me.weishu.chuniansu.pr"
         fi
         source .github/scripts/setup-rust-build.sh ${{ inputs.target }} 26
         cargo build --target $TRIPLE --release --manifest-path ./userspace/ksud/Cargo.toml

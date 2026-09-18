@@ -46,7 +46,7 @@ internal suspend fun isDownloadAvailable(uri: Uri): Boolean = withContext(Dispat
 
 fun checkNewVersion(): LatestVersionInfo {
     if (!isNetworkAvailable(ksuApp)) return LatestVersionInfo()
-    val url = "https://api.github.com/repos/tiann/KernelSU/releases/latest"
+    val url = "https://api.github.com/repos/chunian-nb/ChunianSU/releases/latest"
     // default null value if failed
     val defaultValue = LatestVersionInfo()
     runCatching {
@@ -63,7 +63,7 @@ fun checkNewVersion(): LatestVersionInfo {
                 for (i in 0 until assets.length()) {
                     val asset = assets.getJSONObject(i)
                     val name = asset.getString("name")
-                    if (!name.endsWith(".apk")) {
+                    if (!name.startsWith("ChunianSU_") || !name.endsWith(".apk")) {
                         continue
                     }
 

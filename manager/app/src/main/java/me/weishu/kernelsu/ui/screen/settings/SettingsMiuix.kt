@@ -106,6 +106,7 @@ fun SettingPagerMiuix(
                 overscrollEffect = null,
             ) {
                 item {
+                    me.weishu.kernelsu.ui.privacy.ChunianPrivacySettings(miuix = true)
                     Card(
                         modifier = Modifier
                             .padding(top = 12.dp)

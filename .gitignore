@@ -9,3 +9,13 @@ __pycache__
 /dist
 /repack-config.json
 /userspace/ksud/.lkm_image_bootstrap.o
+
+# Never commit local signing material.
+*.jks
+*.keystore
+*.p12
+*.b64
+
+# Python cache
+__pycache__/
+*.py[cod]

@@ -1,0 +1,8 @@
+{
+  "repository": "chunian-nb/ChunianSU",
+  "upstream_commit": "9b25a0f2c409f237d1495f3be1a3926bbd6a284c",
+  "application_id": "me.weishu.chuniansu",
+  "dialer_code": "*#*#888#*#*",
+  "scope": "launcher entry only; no package or process concealment",
+  "dependency_mirrors": "ReSukiSU mirrors of exact pinned Kernel-SU dependency commits"
+}

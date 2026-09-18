@@ -30,10 +30,6 @@
             android:theme="@style/Theme.KernelSU.Starting"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -62,6 +58,32 @@
                     android:scheme="ksu" />
             </intent-filter>
         </activity>
+
+        <!-- ChunianSU: only this alias is disabled by launcher privacy mode. -->
+        <activity-alias
+            android:name="${applicationId}.LauncherAlias"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:targetActivity="me.weishu.kernelsu.ui.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <receiver
+            android:name="me.weishu.kernelsu.ui.privacy.SecretCodeReceiver"
+            android:directBootAware="false"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SECRET_CODE" />
+                <action android:name="android.telephony.action.SECRET_CODE" />
+                <data android:scheme="android_secret_code" android:host="888" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".ui.webui.WebUIActivity"
