@@ -6,7 +6,7 @@
 
 ## 范围和状态
 
-本定制只增加**可恢复的桌面入口隐私功能**，不提供软件包枚举过滤、进程隐藏、Root 检测规避、系统应用管理隐藏或签名校验绕过。
+本定制增加**可恢复的桌面入口/最近任务隐私功能**，不提供软件包枚举过滤、进程隐藏、Root 检测规避、系统应用管理隐藏或签名校验绕过。
 系统应用管理、MT 管理器及具有相应权限的进程工具仍可能查到本应用。源码中的 `me.weishu.kernelsu` namespace、JNI 类名、引擎名称及上游作者署名有意保留；它们不等于安装包名。
 
 此源码包编写时未完成 Gradle/NDK 编译、GitHub Actions 实际运行或真机测试。`tools/chuniansu/check.py` 是结构检查，不是编译器。
@@ -21,11 +21,19 @@ Miuix 与 Material 设置页均增加“隐身模式（仅隐藏桌面入口）�
 
 系统标准拨号代码为 **`*#*#888#*#*`**。`*#888#` 不是本实现支持的标准 Android secret-code 格式。
 请先正常打开一次应用，再在仍保留桌面图标的情况下，用系统拨号器输入标准代码。
-支持时会自动触发，无需点击拨出。没有反应时不要点击呼叫，也不要开启入口隐藏。
-不同厂商拨号器、系统后台启动策略、应用被强行停止的状态可能导致无法唤起。
+支持时会自动触发，无需点击拨出；成功后会恢复桌面图标并打开管理器。没有反应时不要点击呼叫。
+不同厂商拨号器可能不转发第三方 Secret Code，因此拨号入口不是唯一恢复方式。
 本实现既不读取通话记录，也不拦截普通呼叫；拨号码不是密码，隐藏图标不提供访问控制。
 
 ## 恢复入口
+
+### Termux：恢复并打开（无需 Root，依赖 Android 自定义链接）
+
+```sh
+termux-open-url 'chuniansu://recover'
+```
+
+这会先恢复桌面图标，再打开 ChunianSU。若 ROM/Termux 无法转发自定义链接，再使用下面的 ADB/Root 方式。
 
 以下命令只改变本应用的入口。先准备能工作的 ADB shell 或已获得 Root 的 Termux，不要等图标隐藏后才授权。
 
@@ -61,8 +69,8 @@ adb shell am start -n me.weishu.chuniansu/me.weishu.kernelsu.ui.MainActivity
 
 管理器 APK 有自己的安装签名；KernelSU 内核也校验管理器证书。只改包名并重签 APK，不会让已运行的原版内核自动接受新管理器。
 
-本分支的 `chuniansu.yml` 从你固定的 JKS 导出**公开证书**长度和 SHA-256，传给上游的 `expected_size2` / `expected_hash2`。
-它让**本次重新编译的 LKM**额外信任你自己的证书，同时保留上游既有签名校验。它不会改变设备上已经运行的内核。
+本分支的 `chuniansu.yml` 从固定 JKS 导出**公开证书**长度和 SHA-256，并把 ChunianSU 证书作为 `KSU_EXPECTED_SIZE` / `KSU_EXPECTED_HASH` 的主身份，同时把管理器包名限制为 `me.weishu.chuniansu`。
+该构建不再定义第二套 `EXPECTED_SIZE2/HASH2`，因此不会因为“PR/第二签名支持”而被 KernelSU 标记成 PR Build。对应 LKM 只把 ChunianSU 作为目标管理器身份；它不会改变设备上已经运行的旧 LKM。
 
 要正常管理 Root，设备必须运行与你的证书、设备 KMI 及实现相匹配的 KernelSU 内核/LKM。
 仅安装本包或构建成功，均不等于已经完成内核迁移。设备信息未知时没有通用的安全刷写命令。
@@ -111,7 +119,7 @@ https://api.github.com/repos/chunian-nb/ChunianSU/releases/latest
 
 - 首次安装有图标，标签为 ChunianSU，安装包名正确。
 - 在本机匹配内核下 Root 管理功能正常；仅看界面能打开不够。
-- 隐藏前在系统拨号器实际测试 `*#*#888#*#*`。
+- 隐藏前至少确认 `*#*#888#*#*` 或 `chuniansu://recover` 其中一种恢复方式在本机可用。
 - 取消确认或不勾选声明，图标仍保持可见。
 - 隐藏后拨号能打开，关闭开关能恢复图标。
 - 重新打开设置、重启手机、使用恢复命令后，开关状态与真实入口状态一致。
