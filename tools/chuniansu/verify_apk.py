@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -47,14 +48,25 @@ def verify(apk_dir: Path, expected_cert: str) -> dict:
     name_match = re.search(r"v(.+?)_(\d+)-", apk.name)
     if not apk.name.startswith("ChunianSU_") or not name_match or int(name_match[2]) != version_code:
         raise RuntimeError("APK filename does not match the update parser or manifest versionCode")
-    signing = run(find_tool("apksigner"), "verify", "--verbose", "--print-certs", apk)
-    certificates = [
-        c.lower()
-        for c in re.findall(
-            r"Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)",
-            signing,
-        )
-    ]
+    signing = run(
+        find_tool("apksigner"),
+        "verify",
+        "--verbose",
+        "--print-certs-pem",
+        apk,
+    )
+
+    pem_blocks = re.findall(
+        r"-----BEGIN CERTIFICATE-----\\s*(.*?)\\s*-----END CERTIFICATE-----",
+        signing,
+        flags=re.DOTALL,
+    )
+
+    certificates = []
+    for body in pem_blocks:
+        der = base64.b64decode(re.sub(r"\\s+", "", body), validate=True)
+        certificates.append(hashlib.sha256(der).hexdigest().lower())
+
     certificates = list(dict.fromkeys(certificates))
     expected = expected_cert.lower()
 
