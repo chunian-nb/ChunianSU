@@ -48,9 +48,28 @@ def verify(apk_dir: Path, expected_cert: str) -> dict:
     if not apk.name.startswith("ChunianSU_") or not name_match or int(name_match[2]) != version_code:
         raise RuntimeError("APK filename does not match the update parser or manifest versionCode")
     signing = run(find_tool("apksigner"), "verify", "--verbose", "--print-certs", apk)
-    certificates = re.findall(r"Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)", signing)
-    if [c.lower() for c in certificates] != [expected_cert.lower()]:
-        raise RuntimeError("Final APK signing identity differs from the trusted LKM certificate")
+    certificates = [
+        c.lower()
+        for c in re.findall(
+            r"Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)",
+            signing,
+        )
+    ]
+    certificates = list(dict.fromkeys(certificates))
+    expected = expected_cert.lower()
+
+    print(f"Expected certificate SHA-256: {expected}")
+    print(
+        "APK signer certificate SHA-256: "
+        + (", ".join(certificates) if certificates else "<none>")
+    )
+
+    if certificates != [expected]:
+        actual = ", ".join(certificates) if certificates else "<none>"
+        raise RuntimeError(
+            "Final APK signing identity differs from the trusted LKM certificate: "
+            f"expected={expected}, actual={actual}"
+        )
     with zipfile.ZipFile(apk) as archive:
         for abi in ("arm64-v8a", "x86_64"):
             entry = f"lib/{abi}/libksud.so"
