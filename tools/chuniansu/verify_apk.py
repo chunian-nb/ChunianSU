@@ -57,14 +57,14 @@ def verify(apk_dir: Path, expected_cert: str) -> dict:
     )
 
     pem_blocks = re.findall(
-        r"-----BEGIN CERTIFICATE-----\\s*(.*?)\\s*-----END CERTIFICATE-----",
+        r"-----BEGIN CERTIFICATE-----\s*(.*?)\s*-----END CERTIFICATE-----",
         signing,
         flags=re.DOTALL,
     )
 
     certificates = []
     for body in pem_blocks:
-        der = base64.b64decode(re.sub(r"\\s+", "", body), validate=True)
+        der = base64.b64decode(re.sub(r"\s+", "", body), validate=True)
         certificates.append(hashlib.sha256(der).hexdigest().lower())
 
     certificates = list(dict.fromkeys(certificates))
