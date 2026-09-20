@@ -48,8 +48,9 @@ jobs:
     needs: certificate
     uses: ./.github/workflows/build-lkm.yml
     with:
-      expected_size2: ${{ needs.certificate.outputs.expected_size }}
-      expected_hash2: ${{ needs.certificate.outputs.expected_hash }}
+      expected_size: ${{ needs.certificate.outputs.expected_size }}
+      expected_hash: ${{ needs.certificate.outputs.expected_hash }}
+      manager_package: me.weishu.chuniansu
 
   build-ksuinit:
     uses: ./.github/workflows/ksuinit.yml
