@@ -1,35 +1,47 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package me.weishu.kernelsu.ui.privacy
 
-import android.app.AlertDialog
-import android.content.Context
-import android.widget.CheckBox
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
 import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.AlertDialog as MaterialAlertDialog
+import androidx.compose.material3.Checkbox as MaterialCheckbox
+import androidx.compose.material3.Text as MaterialText
+import androidx.compose.material3.TextButton as MaterialTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
+import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card as MiuixCard
+import top.yukonga.miuix.kmp.basic.Checkbox as MiuixCheckbox
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
+import top.yukonga.miuix.kmp.extra.SuperDialog
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -44,7 +56,6 @@ fun ChunianPrivacySettings(miuix: Boolean) {
     DisposableEffect(context, lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                // Also observes recovery with `pm enable`; there is no stale preference to re-hide it.
                 hidden = LauncherPrivacy.isHidden(context)
             }
         }
@@ -66,12 +77,14 @@ fun ChunianPrivacySettings(miuix: Boolean) {
                 Toast.makeText(context, R.string.chunian_entry_failed, Toast.LENGTH_LONG).show()
             }
     }
+
     val requestChange: (Boolean) -> Unit = { requested ->
         if (requested) showConfirmation = true else applyHidden(false)
     }
 
     val title = stringResource(R.string.chunian_privacy_title)
     val summary = stringResource(R.string.chunian_privacy_summary)
+
     if (miuix) {
         MiuixCard(modifier = Modifier.padding(top = 12.dp).fillMaxWidth()) {
             SwitchPreference(
@@ -105,48 +118,120 @@ fun ChunianPrivacySettings(miuix: Boolean) {
     }
 
     if (showConfirmation) {
-        DisposableEffect(context) {
-            val dialog = makeConfirmationDialog(
-                context = context,
-                onConfirm = { applyHidden(true) },
-                onDismiss = { showConfirmation = false },
-            )
-            onDispose { dialog.dismiss() }
-        }
+        PrivacyConfirmationDialog(
+            miuix = miuix,
+            onConfirm = {
+                showConfirmation = false
+                applyHidden(true)
+            },
+            onDismiss = { showConfirmation = false },
+        )
     }
 }
 
-/** Acknowledgement is deliberate, not an automatic claim that the dialer was tested. */
-private fun makeConfirmationDialog(
-    context: Context,
+@Composable
+private fun PrivacyConfirmationDialog(
+    miuix: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-): AlertDialog {
-    val pad = (24 * context.resources.displayMetrics.density).toInt()
-    val message = TextView(context).apply {
-        setText(R.string.chunian_privacy_confirmation)
+) {
+    var acknowledged by remember { mutableStateOf(false) }
+    val title = stringResource(R.string.chunian_privacy_title)
+    val summary = stringResource(R.string.chunian_privacy_dialog_summary)
+    val dialerNotice = stringResource(R.string.chunian_privacy_confirmation)
+    val recoveryNotice = stringResource(R.string.chunian_privacy_recovery)
+    val acknowledgement = stringResource(R.string.chunian_privacy_acknowledgement)
+    val enableText = stringResource(R.string.chunian_privacy_enable)
+    val cancelText = stringResource(android.R.string.cancel)
+
+    if (miuix) {
+        SuperDialog(
+            show = true,
+            title = title,
+            summary = summary,
+            onDismissRequest = onDismiss,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                MiuixText(dialerNotice, fontSize = 14.sp)
+                MiuixText(recoveryNotice, fontSize = 14.sp)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { acknowledged = !acknowledged }
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    MiuixCheckbox(
+                        state = ToggleableState(acknowledged),
+                        onClick = { acknowledged = !acknowledged },
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    MiuixText(
+                        text = acknowledgement,
+                        modifier = Modifier.weight(1f),
+                        fontSize = 14.sp,
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    MiuixTextButton(
+                        text = cancelText,
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                    )
+                    MiuixTextButton(
+                        text = enableText,
+                        onClick = onConfirm,
+                        enabled = acknowledged,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary(),
+                    )
+                }
+            }
+        }
+    } else {
+        MaterialAlertDialog(
+            onDismissRequest = onDismiss,
+            title = { MaterialText(title) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    MaterialText(summary)
+                    MaterialText(dialerNotice)
+                    MaterialText(recoveryNotice)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { acknowledged = !acknowledged },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        MaterialCheckbox(
+                            checked = acknowledged,
+                            onCheckedChange = { acknowledged = it },
+                        )
+                        MaterialText(
+                            text = acknowledgement,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            },
+            dismissButton = {
+                MaterialTextButton(onClick = onDismiss) {
+                    MaterialText(cancelText)
+                }
+            },
+            confirmButton = {
+                MaterialTextButton(
+                    onClick = onConfirm,
+                    enabled = acknowledged,
+                ) {
+                    MaterialText(enableText)
+                }
+            },
+        )
     }
-    val acknowledgement = CheckBox(context).apply {
-        setText(R.string.chunian_privacy_acknowledgement)
-    }
-    val content = LinearLayout(context).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(pad, pad / 2, pad, 0)
-        addView(message)
-        addView(acknowledgement)
-    }
-    val dialog = AlertDialog.Builder(context)
-        .setTitle(R.string.chunian_privacy_title)
-        .setView(ScrollView(context).apply { addView(content) })
-        .setNegativeButton(android.R.string.cancel) { _, _ -> }
-        .setPositiveButton(R.string.chunian_privacy_enable) { _, _ -> onConfirm() }
-        .create()
-    dialog.setOnDismissListener { onDismiss() }
-    dialog.setOnShowListener {
-        val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-        button.isEnabled = false
-        acknowledgement.setOnCheckedChangeListener { _, checked -> button.isEnabled = checked }
-    }
-    dialog.show()
-    return dialog
 }
