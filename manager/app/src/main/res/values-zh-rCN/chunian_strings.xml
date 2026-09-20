@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="chunian_privacy_title">隐身模式（仅隐藏桌面入口）</string>
-    <string name="chunian_privacy_summary">仅隐藏桌面图标。在支持的系统拨号器输入 *#*#888#*#* 打开；不隐藏安装记录和进程。</string>
-    <string name="chunian_privacy_confirmation">此开关只隐藏桌面入口。系统应用管理、MT 管理器和有权限的进程工具仍可查到本应用。\n\n请先保留图标，在系统拨号器测试 *#*#888#*#* 能否打开本应用。支持时无需拨出电话；没有反应时不要点击呼叫。\n\n请保存 CHUNIAN_README.md 中的恢复命令。拨号码不是密码。关闭此开关可恢复桌面图标。</string>
-    <string name="chunian_privacy_acknowledgement">我已测试拨号入口，并保存了恢复命令。</string>
-    <string name="chunian_privacy_enable">隐藏桌面入口</string>
-    <string name="chunian_entry_hidden">已停用桌面入口，桌面刷新可能需要一些时间。</string>
-    <string name="chunian_entry_restored">已恢复桌面入口，桌面刷新可能需要一些时间。</string>
+    <string name="chunian_privacy_title">隐身模式</string>
+    <string name="chunian_privacy_summary">隐藏桌面入口和最近任务；不会隐藏系统安装记录或进程。</string>
+    <string name="chunian_privacy_dialog_summary">开启后桌面图标会消失，Root 功能不会因此停止。</string>
+    <string name="chunian_privacy_confirmation">拨号恢复：在支持的系统拨号器输入 *#*#888#*#*。成功时会恢复桌面图标并打开 ChunianSU。HyperOS/部分 OEM 拨号器可能不会转发第三方 Secret Code，因此不能把它当作唯一恢复方式。</string>
+    <string name="chunian_privacy_recovery">备用恢复：Termux 可执行 termux-open-url 'chuniansu://recover'。也可通过 ADB/Root 直接启用 LauncherAlias。请先确认至少一种恢复方式可用。</string>
+    <string name="chunian_privacy_acknowledgement">我已确认至少一种恢复方式可用</string>
+    <string name="chunian_privacy_enable">隐藏入口</string>
+    <string name="chunian_entry_hidden">桌面入口和最近任务已隐藏。恢复入口成功触发时会重新显示桌面图标。</string>
+    <string name="chunian_entry_restored">桌面入口已恢复，桌面刷新可能需要一些时间。</string>
     <string name="chunian_entry_failed">无法更改桌面入口，未执行其他隐藏操作。</string>
 </resources>
