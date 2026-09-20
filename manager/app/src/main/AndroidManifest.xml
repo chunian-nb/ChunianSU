@@ -86,6 +86,20 @@
         </receiver>
 
         <activity
+            android:name="me.weishu.kernelsu.ui.privacy.RecoveryActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@style/Theme.KernelSU.Starting">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="chuniansu" android:host="recover" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".ui.webui.WebUIActivity"
             android:autoRemoveFromRecents="true"
             android:configChanges="density|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|locale|layoutDirection|fontScale|keyboard|keyboardHidden"
