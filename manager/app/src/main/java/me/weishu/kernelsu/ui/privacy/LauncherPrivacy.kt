@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package me.weishu.kernelsu.ui.privacy
 
+import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 
-/** Changes only our launcher alias. This does not hide a package, UID, files or processes. */
+/** Controls only launcher/recents visibility. It does not hide the installed package, UID, files or processes. */
 object LauncherPrivacy {
     private fun alias(context: Context) =
         ComponentName(context.packageName, "${context.packageName}.LauncherAlias")
@@ -15,7 +16,7 @@ object LauncherPrivacy {
             PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
             PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER,
             PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED -> true
-            else -> false // DEFAULT uses android:enabled="true" from the manifest.
+            else -> false
         }
 
     fun setHidden(context: Context, hidden: Boolean) {
@@ -25,5 +26,12 @@ object LauncherPrivacy {
             else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
             PackageManager.DONT_KILL_APP,
         )
+
+        // Keep the current task out of Recents while the launcher entry is hidden.
+        runCatching {
+            context.getSystemService(ActivityManager::class.java)
+                ?.appTasks
+                ?.forEach { it.setExcludeFromRecents(hidden) }
+        }
     }
 }
