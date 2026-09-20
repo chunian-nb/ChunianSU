@@ -60,6 +60,15 @@ def check() -> None:
     require(actions == {"android.telephony.action.SECRET_CODE", "android.provider.Telephony.SECRET_CODE"}, "Wrong dialer actions")
     data = receiver.find("intent-filter/data")
     require(data is not None and data.get(ANDROID + "scheme") == "android_secret_code" and data.get(ANDROID + "host") == "888", "Wrong dialer URI")
+    recovery = next((a for a in app.findall("activity") if a.get(ANDROID + "name", "").endswith(".RecoveryActivity")), None)
+    require(recovery is not None and recovery.get(ANDROID + "exported") == "true", "Missing recovery activity")
+    recovery_data = recovery.find("intent-filter/data")
+    require(
+        recovery_data is not None
+        and recovery_data.get(ANDROID + "scheme") == "chuniansu"
+        and recovery_data.get(ANDROID + "host") == "recover",
+        "Wrong recovery deep link",
+    )
     for path, call in [("Miuix", "true"), ("Material", "false")]:
         text = read(JAVA + f"ui/screen/settings/Settings{path}.kt")
         require(text.count(f"ChunianPrivacySettings(miuix = {call})") == 1, f"Missing {path} settings entry")
@@ -69,7 +78,7 @@ def check() -> None:
     require("api.github.com/repos/tiann/KernelSU" not in updater, "Updater still points upstream")
     for locale in ("values", "values-zh-rCN"):
         tree = ET.fromstring(read(f"manager/app/src/main/res/{locale}/chunian_strings.xml"))
-        require(len(tree.findall("string")) == 8, f"Incomplete {locale} strings")
+        require(len(tree.findall("string")) == 10, f"Incomplete {locale} strings")
     helper = read(JAVA + "ui/privacy/LauncherPrivacy.kt")
     require("DONT_KILL_APP" in helper and "setComponentEnabledSetting" in helper, "Wrong launcher-toggle implementation")
     require('cargo:rustc-env=KSU_PACKAGE_NAME=me.weishu.chuniansu' in read("userspace/ksud/build.rs"), "Wrong daemon package fallback")
@@ -91,10 +100,24 @@ def check() -> None:
     require("github.com/Kernel-SU/ksu_props" not in cargo_lock + ksud_cargo, "Unavailable ksu_props source remains")
     require("github.com/Kernel-SU/rustix" not in cargo_lock + ksuinit_cargo, "Unavailable rustix source remains")
     workflow = read(".github/workflows/chuniansu.yml")
-    for token in ("expected_size2:", "expected_hash2:", "pack_lkm: true", "pack_ksuinit: true", "repack_apk.py repack", "verify_apk.py", "name: ChunianSU"):
+    for token in (
+        "expected_size:",
+        "expected_hash:",
+        "manager_package: me.weishu.chuniansu",
+        "pack_lkm: true",
+        "pack_ksuinit: true",
+        "repack_apk.py repack",
+        "verify_apk.py",
+        "name: ChunianSU",
+    ):
         require(token in workflow, f"Workflow is missing {token}")
+    require("expected_size2:" not in workflow and "expected_hash2:" not in workflow, "ChunianSU must not use PR/secondary signing identity")
     require("workflow_dispatch:" in workflow and "pull_request" not in workflow, "Signing workflow must be explicitly dispatched, not run on PR code")
-    require('safe.directory "$GITHUB_WORKSPACE"' in read(".github/workflows/ddk-lkm.yml"), "LKM workflow still assumes the upstream checkout name")
+    ddk_workflow = read(".github/workflows/ddk-lkm.yml")
+    require('safe.directory "$GITHUB_WORKSPACE"' in ddk_workflow, "LKM workflow still assumes the upstream checkout name")
+    require("KSU_EXPECTED_SIZE=$EXPECTED_SIZE" in ddk_workflow, "Primary manager size is not forwarded to Kbuild")
+    require("KSU_EXPECTED_HASH=$EXPECTED_HASH" in ddk_workflow, "Primary manager hash is not forwarded to Kbuild")
+    require("KSU_MANAGER_PACKAGE=$MANAGER_PACKAGE" in ddk_workflow, "Manager package restriction is not forwarded to Kbuild")
     for path in (ROOT / "tools/chuniansu").glob("*.py"):
         ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     print("Static customization checks passed.")
